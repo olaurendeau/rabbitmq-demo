@@ -1,0 +1,113 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+    - { resource: services.yml }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# http://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    locale: en
+
+framework:
+    #esi:             ~
+    #translator:      { fallbacks: ["%locale%"] }
+    secret:          "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
+    form:            ~
+    csrf_protection: ~
+    validation:      { enable_annotations: true }
+    #serializer:      { enable_annotations: true }
+    templating:
+        engines: ['twig']
+        #assets_version: SomeVersionScheme
+    default_locale:  "%locale%"
+    trusted_hosts:   ~
+    trusted_proxies: ~
+    session:
+        # http://symfony.com/doc/current/reference/configuration/framework.html#handler-id
+        handler_id:  session.handler.native_file
+        save_path:   "%kernel.root_dir%/../var/sessions/%kernel.environment%"
+    fragments:       ~
+    http_method_override: true
+    assets: ~
+
+# Twig Configuration
+twig:
+    debug:            "%kernel.debug%"
+    strict_variables: "%kernel.debug%"
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+        driver:   pdo_mysql
+        host:     "%database_host%"
+        port:     "%database_port%"
+        dbname:   "%database_name%"
+        user:     "%database_user%"
+        password: "%database_password%"
+        charset:  UTF8
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.root_dir%/data/data.db3"
+        #   2. Uncomment database_path in parameters.yml.dist
+        #   3. Uncomment next line:
+        #     path:     "%database_path%"
+
+    orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: "%mailer_transport%"
+    host:      "%mailer_host%"
+    username:  "%mailer_user%"
+    password:  "%mailer_password%"
+    spool:     { type: memory }
+
+
+swarrot:
+    provider: amqp_lib # pecl or amqp_lib
+    default_connection: rabbitmq
+    default_command: swarrot.command.base # Swarrot\SwarrotBundle\Command\SwarrotCommand
+    connections:
+        rabbitmq:
+            host: "%rabbitmq_host%"
+            port: "%rabbitmq_port%"
+            login: "%rabbitmq_login%"
+            password: "%rabbitmq_password%"
+            vhost: '/'
+    processors_stack:
+        signal_handler: 'Swarrot\Processor\SignalHandler\SignalHandlerProcessor'
+        ack: 'Swarrot\Processor\Ack\AckProcessor'
+        max_messages: 'Swarrot\Processor\MaxMessages\MaxMessagesProcessor'
+        retry: 'Swarrot\Processor\Retry\RetryProcessor'
+        exception_catcher: 'Swarrot\Processor\ExceptionCatcher\ExceptionCatcherProcessor'
+        max_execution_time: 'Swarrot\Processor\MaxExecutionTime\MaxExecutionTimeProcessor'
+    consumers:
+        images:
+            processor: app.processor.images
+    messages_types:
+        images:
+            connection: rabbitmq # use the default connection by default
+            exchange: exchange.images
+            routing_key: image
+
+ola_rabbit_mq_admin_toolkit:
+    delete_allowed: true # Allow deletion of exchange, queues and binding for updating configuration. Shouldn't be enabled in production
+    connections:
+        default: http://%rabbitmq_login%:%rabbitmq_password%@%rabbitmq_host%:15672
+    vhosts:
+        default:
+            name: /
+            permissions:
+                guest: ~
+            exchanges:
+                exchange.images: ~
+            queues:
+                queue.images:
+                    bindings:
+                        - { exchange: exchange.images, routing_key: "image" }

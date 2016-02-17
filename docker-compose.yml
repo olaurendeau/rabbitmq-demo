@@ -1,0 +1,22 @@
+web:
+    build: .
+    volumes:
+        - .:/var/www
+    tty: true
+    links:
+        - rmq
+    ports:
+        - 8888:8888
+
+worker:
+    build: docker/worker
+    volumes:
+        - .:/var/www
+    tty: true
+    links:
+        - rmq
+
+rmq:
+    image: "rabbitmq:management"
+    ports:
+        - 15672:15672

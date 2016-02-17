@@ -1,0 +1,22 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/book/service_container.html
+parameters:
+#    parameter_name: value
+
+services:
+    app.manager.images:
+        class: AppBundle\Manager\ImagesManager
+        arguments:
+            - "@swarrot.publisher"
+            - "%kernel.cache_dir%"
+            - "%kernel.root_dir%"
+
+    app.processor.images:
+        class: AppBundle\Processor\ImagesProcessor
+        arguments:
+            - "@app.manager.images"
+
+    app.processor.vhost_configuration:
+        class: AppBundle\Processor\VhostConfigurationProcessor
+        arguments:
+            - "@app.manager.images"
