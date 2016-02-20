@@ -8,6 +8,10 @@ use Swarrot\SwarrotBundle\Broker\Publisher;
 
 class ImagesManager
 {
+    const IMAGE_NOT_FOUND = 'IMAGE_NOT_FOUND';
+    const IMAGE_NOT_PROCESSED = 'IMAGE_NOT_PROCESSED';
+    const IMAGE_READY = 'IMAGE_READY';
+
     private $publisher;
     private $cachePath;
     private $rootPath;
@@ -62,6 +66,18 @@ class ImagesManager
     public function get($filename)
     {
         return $this->uri($filename);
+    }
+
+    public function status($filename) {
+        if (!file_exists($this->path($filename))) {
+            return self::IMAGE_NOT_FOUND;
+        }
+
+        if (filesize($this->path($filename)) == 0) {
+            return self::IMAGE_NOT_PROCESSED;
+        }
+
+        return self::IMAGE_READY;
     }
 
     private function touch($filename)

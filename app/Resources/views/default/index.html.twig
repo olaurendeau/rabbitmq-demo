@@ -5,15 +5,71 @@
         <div id="container">
             <div id="next">
                 <h2>Upload image</h2>
-                <form name="form" method="post" enctype="multipart/form-data"  action="{{ path('images_create') }}">
+                <form id="image-form" name="form" method="post" enctype="multipart/form-data" action="{{ path('images_create') }}">
                     <input type="file" name="files[]" id="images" multiple />
                     <button type="submit" id="btn">Upload Files!</button>
                 </form>
             </div>
-            <div>
+            <div id="image-container">
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
+<script type="text/javascript">
+    var uri = '{{ app.request.schemeAndHttpHost }}';
+
+    function loadAllImages() {
+        $.get(uri+'/api/images', function(images) {
+            appendImages(images);
+        });
+    }
+
+    function loadImage(id) {
+        setTimeout($.get(uri+'/api/images/'+id, function(images, textStatus, xhr) {
+            if (xhr.status == 200) {
+                appendImages(images);
+            } else {
+                loadImage(id);
+            }
+        }), 1000);
+    }
+
+    function appendImages(images) {
+        images.forEach(function(uri) {
+            $('#image-container').append('<img width="200px" src="'+uri+'"/>');
+        });
+    }
+
+    function submitImages() {
+        var formData = new FormData($('#image-form')[0]);
+        $.ajax({
+            url: uri+'/api/images',
+            type: 'POST',
+            success: function(images) {
+                images.forEach(function (id) {
+                    loadImage(id);
+                });
+            },
+            data: formData,
+            //Options to tell jQuery not to process data or worry about content-type.
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    }
+
+    $(function() {
+        //Load existing images
+        loadAllImages();
+        $('#image-form').on('submit', function(event) {
+            submitImages();
+            event.preventDefault();
+        });
+    });
+</script>
 {% endblock %}
 
 {% block stylesheets %}

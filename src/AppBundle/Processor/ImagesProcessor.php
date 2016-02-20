@@ -17,6 +17,8 @@ class ImagesProcessor implements ProcessorInterface
 
     public function process(Message $message, array $options)
     {
+        sleep(rand(3,10));
+
         $body = json_decode($message->getBody(), true);
 
         $this->manager->process($body['filename']);

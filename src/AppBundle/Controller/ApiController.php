@@ -4,10 +4,12 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Images;
 use AppBundle\Form\Type\CreateImagesType;
+use AppBundle\Manager\ImagesManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApiController extends Controller
 {
@@ -47,6 +49,14 @@ class ApiController extends Controller
      */
     public function getAction(Request $request, $filename)
     {
+        switch($this->get('app.manager.images')->status($filename)) {
+            case ImagesManager::IMAGE_NOT_PROCESSED:
+                $response = new Response();
+                $response->setStatusCode(Response::HTTP_ACCEPTED);
+
+                return $response;
+        }
+
         $uri = $this->get('app.manager.images')->get($filename);
 
         return new JsonResponse(array($this->url($uri)));
