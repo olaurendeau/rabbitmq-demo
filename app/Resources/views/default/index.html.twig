@@ -12,6 +12,9 @@
             </div>
             <div id="image-container">
             </div>
+            <div style="display:none;">
+                <img id="spinner" width="200px" src="{{ asset('assets/images/spinner.gif') }}"/>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -30,16 +33,24 @@
     function loadImage(id) {
         setTimeout($.get(uri+'/api/images/'+id, function(images, textStatus, xhr) {
             if (xhr.status == 200) {
-                appendImages(images);
+                appendImages(images, id);
             } else {
                 loadImage(id);
             }
         }), 1000);
     }
 
-    function appendImages(images) {
+    function appendSpinner(id) {
+        $('#image-container').append('<img id="'+id+'" width="200px" src="'+$('#spinner').attr('src')+'"/>');
+    }
+
+    function appendImages(images, id) {
         images.forEach(function(uri) {
-            $('#image-container').append('<img width="200px" src="'+uri+'"/>');
+            if (id != undefined) {
+                $('#image-container img[id="'+id+'"]').replaceWith('<img width="200px" src="'+uri+'"/>');
+            } else {
+                $('#image-container').append('<img width="200px" src="'+uri+'"/>');
+            }
         });
     }
 
@@ -50,6 +61,7 @@
             type: 'POST',
             success: function(images) {
                 images.forEach(function (id) {
+                    appendSpinner(id);
                     loadImage(id);
                 });
             },
