@@ -6,7 +6,7 @@ Example of symfony2 app using rabbitmq for asynchronous tasks
 ```bash
 docker-compose build
 docker-compose up -d
-docker-machine run web bin/console rabbitmq:vhost:define # Create rabbitmq vhost
+docker-compose run web bin/console rabbitmq:vhost:define # Create rabbitmq vhost
 ```
 
 # Check installation
